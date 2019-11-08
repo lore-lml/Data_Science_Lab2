@@ -1,4 +1,6 @@
 import csv
+import matplotlib.pyplot as plt
+import numpy as np
 
 header = ""
 AVG_TMP_INDEX = 1
@@ -70,8 +72,7 @@ def fill_empty_fields(cities, avg_tmp):
         avg_tmp[i] = (left + right) / 2
 
 
-
-def topN_hottest_coldest(dataset, city, topN):
+def topn_hottest_coldest(dataset, city, topN):
     data_of_city = [dataset[AVG_TMP_INDEX][i] for i, c in enumerate(dataset[CITY_INDEX]) if c.lower() == city.lower()]
     data_of_city.sort(reverse=True)
 
@@ -82,11 +83,35 @@ def topN_hottest_coldest(dataset, city, topN):
     print(data_of_city[len(data_of_city)-1 : len(data_of_city)-(topN+1) : -1])
 
 
-def dataset_to_file(dataset, path):
-    with open(path, 'w'):
+def dataset2csv(dataset, path):
+    with open(path, 'w', encoding='utf8') as fp:
+        fp.write(f"{','.join(header)}\n")
+
         for i in range(len(dataset[0])):
+            row = []
             for j in range(len(dataset)):
-                pass
+                row.append(str(dataset[j][i]))
+            fp.write(f'{",".join(row)}\n')
+
+
+def get_avg_tmp(city, dataset):
+    return [dataset[AVG_TMP_INDEX][i] for i in range(len(dataset[CITY_INDEX])) if dataset[CITY_INDEX][i].lower() == city.lower()]
+
+
+def plot_avg_tmp(cities):
+
+    print()
+    for c, array in cities.items():
+        plt.hist(array, label=c)
+        print(f"{c}: Average = {np.array(array).mean():.2f}; Std Dev = {np.array(array).std():.2f}")
+    plt.legend()
+    _ = plt.xlabel('AverageTemperature')
+    plt.show()
+
+
+# TF=1.8⋅TC+32 -> TC = (TF-32)/1.8
+def farhenheit2celsius(array):
+    return list(map(lambda x: (float(x)-32)/1.8, array))
 
 
 if __name__ == '__main__':
@@ -97,7 +122,15 @@ if __name__ == '__main__':
     fill_empty_fields(dataset[CITY_INDEX], dataset[AVG_TMP_INDEX])
     fill_empty_fields(dataset[CITY_INDEX], dataset[AVG_TMP_U_INDEX])
     # test(dataset)
-    dataset_to_file(dataset, "data_sets/glt_complete.csv")
+    # dataset2csv(dataset, "data_sets/glt_complete.csv")
 
     # 3.
-    # topN_hottest_coldest(dataset, dataset[CITY_INDEX][0], 1000)
+    topn_hottest_coldest(dataset, "Rome", 5)
+
+    # 4.
+    plot_avg_tmp({"Rome": get_avg_tmp("Rome", dataset),
+                  "Bangkok": get_avg_tmp("Bangkok", dataset)})
+
+    # 5.
+    plot_avg_tmp({"Rome": get_avg_tmp("Rome", dataset),
+                  "Bangkok": farhenheit2celsius(get_avg_tmp("Bangkok", dataset))})
