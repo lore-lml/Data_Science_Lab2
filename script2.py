@@ -1,4 +1,5 @@
 import csv
+from math import log
 from collections import Counter
 import string
 
@@ -36,6 +37,37 @@ def csv2list(path):
         return dataset
 
 
+def tf(tokens):
+    tf = {}
+
+    for word in tokens:
+        try:
+            tf[word] += 1
+        except KeyError:
+            tf[word] = 1
+
+    return tf
+
+
+def tf_list(tokens_list):
+    return [tf(tokens) for tokens in tokens_list]
+
+
+def idf(documents_freq):
+    N = len(documents_freq)
+    dft = {}
+
+    for d in documents_freq:
+        words = d.keys()
+        for w in words:
+            try:
+                dft[w] += 1
+            except KeyError:
+                dft[w] = 1
+
+    return {w: log(N/t) for w, t in dft.items()}
+
+
 if __name__ == '__main__':
     # 1.
     dataset = csv2list("data_sets/imdb.csv")
@@ -44,4 +76,12 @@ if __name__ == '__main__':
 
     # 2.
     tokens = tokenize(dataset[COMMENT_I])
-    print(tokens[:2])
+    # print(tokens[:2])
+
+    # 3.
+    documents_freq = tf_list(tokens)
+    # print(term_freq[:5])
+
+    # 4.
+    inverse_document_freq = idf(documents_freq)
+    print(inverse_document_freq)
