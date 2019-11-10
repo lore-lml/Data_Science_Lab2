@@ -2,6 +2,7 @@ import csv
 from math import log
 from collections import Counter
 import string
+import numpy as np
 
 header = ""
 COMMENT_I = 0
@@ -92,6 +93,23 @@ def cosine_similarity(d1, d2):
     return dot_product(d1, d2) / (norm(d1) * norm(d2))
 
 
+def compute_similarities(test, samples):
+    return [cosine_similarity(test, s) for s in samples]
+
+
+def get_label(positive_d, negative_d, similarities):
+    p_sim = [similarities[p] for p in positive_d]
+    n_sim = [similarities[p] for p in negative_d]
+
+    p_mean = np.array(p_sim).mean()
+    n_mean = np.array(n_sim).mean()
+
+    if p_mean > n_mean:
+        return 1
+    else:
+        return 0
+
+
 if __name__ == '__main__':
     # 1.
     dataset = csv2list("data_sets/imdb.csv")
@@ -120,3 +138,6 @@ if __name__ == '__main__':
     positive_d = [i for i, d in enumerate(dataset[LABELS_I]) if d == 1]
     negative_d = [i for i, d in enumerate(dataset[LABELS_I]) if d == 0]
     # print(f"{len(positive_d)} {len(negative_d)}")
+    similarities = compute_similarities(test_document, tf_idf)
+    label = get_label(positive_d, negative_d, similarities)
+    print(label)
